@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <title>metronome</title>
+  <meta name="author" content="sembiki.com">
+  <meta name="description" content="meemoo.js module for rhythm in bpm or ms" />
+  
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+  <script src="http://meemoo.org/meemoo/v1/meemoo-min.js"></script>
+
+  <style type="text/css">
+    html, body {
+      font-family: Verdana;
+      font-size: 10px;
+    }
+    .light {
+      display: inline-block;
+      width: 25px;
+      height: 25px;
+      border-radius: 10px;
+      border: 1px solid #AAA;
+      margin-right: 5px;
+      background-color: #FFF;
+    }
+    .on {
+      background-color: #FF9292;
+    }
+    #info {
+      margin-bottom: 10px;
+    }
+  </style>
+
+</head>
+<body>
+  
+  <div id="leftlight" class="light"></div>
+  <div id="rightlight" class="light"></div>
+
+  <div id="info"></div>
+
+  <button id="start" type="button" onclick="Meemoo.inputs.start()">start</button>
+  <button id="stop" type="button" onclick="Meemoo.inputs.stop()">stop</button>
+  
+  <script type="text/javascript">
+  
+  $(document).ready(function() {
+
+    var defaultMs = 500;
+    
+    var bpm, ms, beat;
+    var loopInterval;
+    var currentBeat = true;
+
+    var running = false;
+    
+    function setBpm(message){
+      bpm = parseFloat(message, 10);
+      ms = parseInt((1000 / bpm * 60), 10);
+      if (running) {
+        setLoop(ms);
+      }
+      setInfo();
+    }
+    
+    function setMs(message){
+      ms = parseInt(message, 10);
+      bpm = parseInt((1000 / ms * 60), 10);
+      if (running) {
+        setLoop(ms);
+      }
+      setInfo();
+    }
+
+    function setInfo(){
+      $("#info").text(ms+"ms "+bpm+"bpm");
+    }
+    
+    Meemoo.setInfo({
+      title: "metronome",
+      author: "Forrest Oliphant",
+      description: "meemoo module for rhythm in bpm or ms"
+    }).addInputs({
+      ms: {
+        action: setMs,
+        type: "int"
+      },
+      bpm: {
+        action: setBpm,
+        type: "number"
+      },
+      start: {
+        action: function (m) {
+          running = true;
+          setLoop(ms);
+        },
+        type: "bang"
+      },
+      stop: {
+        action: function (m) {
+          running = false;
+          clearInterval(loopInterval);
+        },
+        type: "bang"
+      }
+    }).addOutputs({
+      beat: { 
+        type: "bang"
+      }
+    });
+    
+    function setLoop(val){
+      clearInterval(loopInterval);
+      loopInterval = setInterval(doLoop, val);
+    }
+    
+    function doLoop (){
+      Meemoo.send("beat");
+
+      // Lights
+      if (currentBeat) {
+        $("#leftlight").removeClass("on");
+        $("#rightlight").addClass("on");
+        currentBeat = false;
+      } else {
+        $("#rightlight").removeClass("on");
+        $("#leftlight").addClass("on");
+        currentBeat = true;
+      }
+    };
+
+    // Start with default 
+    Meemoo.inputs.ms(defaultMs);
+  });
+  
+  </script>
+  
+</body>
+</html>
