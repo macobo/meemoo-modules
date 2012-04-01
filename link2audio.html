@@ -1,0 +1,84 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title></title>
+  <meta name="author" content="macobo" />
+  <meta name="description" content="Audio from an outside source" />
+  
+  <script src="http://meemoo.org/meemoo/v1/meemoo-min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+  
+  <style type="text/css">
+    html, body {
+      margin:0;
+      padding:0;
+      font-family: Verdana;
+      font-size: 10px;
+    }
+    audio {
+      width: 95%;
+    }
+    h2 {
+      margin: 0;
+      padding: 0;
+      font-family: verdana;
+      font-size: 10px;
+      font-weight: 100;
+    }
+  </style>
+</head>
+<body>
+  
+  <audio id="audio" controls="true" />
+    Your browser doesn't support audio.
+  </audio>
+  <p id="info"></p>
+  <!-- File input -->
+  <input type="file" id="fileinput" onchange="handle(this.files[0])"/>
+  
+  <script type="text/javascript">
+  
+    var reader = new FileReader();
+    function handle(file) {
+      reader.readAsDataURL(file);
+    }
+    reader.onload = function(e) {
+      setAudioSrc(e.target.result);
+    }
+   
+    //Reads URL and sets it as audio elements src
+    function setAudioSrc(input) {
+      var audio = $("#audio"); 
+      audio.attr("src", input);
+      audio[0].pause();
+      audio[0].load();
+      audio[0].play();
+      if (input.length < 100)
+        $("#info").html($("<h2 />").text(input));
+      else
+        $("#info").html("");
+      Meemoo.send("audio", input);      
+    }
+    
+    Meemoo.setInfo({
+      title: "link2audio",
+      author: "macobo",
+      description: "Audio from an outside source"
+    }).addInputs({
+      sourceURL: {
+        action: setAudioSrc,
+        type: "string"
+      }
+    }).addOutputs({
+      audio: {
+        type: "data:audio"
+      }
+    });
+  
+    
+  </script>
+  
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>textarray</title>
+  <meta name="author" content="macobo">
+  <meta name="description" content="For splitting a big block of strings into an array of strings that can be sent one after another" />
+  
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+  
+  <script src="http://meemoo.org/meemoo/v1/meemoo-min.js"></script>
+  
+  <style type="text/css">
+    html {
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      margin: 0;
+      padding: 5px 0 0 5px;
+      font-family: verdana;
+      font-size: 10px;
+    }
+    h2 {
+      margin: 0;
+      padding: 0;
+      font-family: verdana;
+      font-size: 10px;
+      font-weight: 100;
+    }
+    p.pOne {
+        
+    }
+    p.pTwo {
+        color: red;
+    }
+    #input {
+        width: 95%;
+    }
+  </style>
+</head>
+<body>
+  
+  <textarea id="input" rows="6"></textarea>
+  <!--<button onclick="updateResults()">Update</button>-->
+  <div id="results" />
+  
+  <script type="text/javascript">
+    var splitter = '\n';
+    var delay = 1000, textArray, at = 0;
+    var pClasses = ["pOne", "pTwo"];
+    
+    //Returns array: textarea input split by splitter
+    //Ignores blank parts
+    function getSplittage() {
+        var arr = $("#input").val().split(splitter);
+        var result = [];
+        for (var i = 0; i < arr.length; i++) {
+            arr[i] = $.trim(arr[i]);
+            if (arr[i] != "")
+                result.push(arr[i]);
+        }
+        return result;
+    }
+    
+    //Makes the div results contain the split input
+    function updateResults() {
+        textArray = getSplittage();
+        console.log(textArray);
+        $("#results").html("");
+        var j = 0;
+        for (var i = 0; i < textArray.length; i++) {
+            var a = $("<p />").attr("class", pClasses[j])
+                            .text(i + ". " + textArray[i]);
+            $("#results").append(a);
+            j = 1-j; //switch class used
+        }
+    }
+    
+    function send() {
+        if (at < textArray.length) {
+            console.log("Sending "+at);
+            Meemoo.send("line", textArray[at++]);
+        }
+    }
+    
+    Meemoo.setInfo({
+      title: "textarea",
+      author: "macobo",
+      description: "For splitting a big block of strings into an array of strings that can be sent one after another"
+    }).addInputs({
+        refresh: {
+            action: updateResults,
+            type: "bang"
+        },
+        splitter: {
+            action: function (m) {
+                splitter = m;
+                updateResults();
+            },
+            type: "string"
+        },
+        sendAll: {
+            action: function() {
+                at = 0;
+                send();
+            },
+            type: "bang"
+        },
+        feedback: {
+            action: send,
+            type: "data:audio/x-wav"
+        }
+    }).addOutputs({
+        line: {
+            type: "string"
+        }
+    });
+    
+  </script>
+  
+</body>
+</html>
